@@ -1,4 +1,4 @@
-module configo
+module github.com/Maksumys/configo
 
 go 1.18
 
