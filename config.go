@@ -75,7 +75,7 @@ func Parse[T any](option Option) (t T, err error) {
 	raw := make(map[string]any)
 
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		TagName:              "config",
+		TagName:              "configo",
 		IgnoreUntaggedFields: true,
 		Result:               &raw,
 	})
@@ -169,7 +169,7 @@ func provideDefaultTagInternal(v reflect.Value) {
 	}
 
 	for i := 0; i < t.NumField(); i++ {
-		if configTag := t.Field(i).Tag.Get("config"); configTag != "-" && len(configTag) > 0 {
+		if configTag := t.Field(i).Tag.Get("configo"); configTag != "-" && len(configTag) > 0 {
 			if v.Field(i).Kind() == reflect.Struct {
 				provideDefaultTagInternal(v.Field(i))
 			} else if v.Field(i).Kind() == reflect.Pointer {

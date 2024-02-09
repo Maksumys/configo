@@ -9,8 +9,8 @@ import (
 func TestParseDefault(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
 		type confTest struct {
-			Address string `config:"address" default:"127.0.0.1"`
-			Port    int    `config:"port" default:"80"`
+			Address string `configo:"address" default:"127.0.0.1"`
+			Port    int    `configo:"port" default:"80"`
 		}
 
 		c, err := Parse[confTest](Option{})
@@ -23,11 +23,11 @@ func TestParseDefault(t *testing.T) {
 		type confTest struct {
 			Http struct {
 				Tls struct {
-					Enabled bool `config:"enabled" default:"true"`
-				} `config:"tls"`
-				Address string `config:"address" default:"127.0.0.1"`
-				Port    int    `config:"port" default:"80"`
-			} `config:"http"`
+					Enabled bool `configo:"enabled" default:"true"`
+				} `configo:"tls"`
+				Address string `configo:"address" default:"127.0.0.1"`
+				Port    int    `configo:"port" default:"80"`
+			} `configo:"http"`
 		}
 
 		c, err := Parse[confTest](Option{})
@@ -39,8 +39,8 @@ func TestParseDefault(t *testing.T) {
 	})
 	t.Run("pointers", func(t *testing.T) {
 		type confTest struct {
-			Address *string `config:"address" default:"127.0.0.1"`
-			Port    *int    `config:"port" default:"80"`
+			Address *string `configo:"address" default:"127.0.0.1"`
+			Port    *int    `configo:"port" default:"80"`
 		}
 		c, err := Parse[confTest](Option{})
 
@@ -52,11 +52,11 @@ func TestParseDefault(t *testing.T) {
 		type confTest struct {
 			Http *struct {
 				Tls struct {
-					Enabled bool `config:"enabled" default:"true"`
-				} `config:"tls"`
-				Address string `config:"address" default:"127.0.0.1"`
-				Port    *int   `config:"port" default:"80"`
-			} `config:"http"`
+					Enabled bool `configo:"enabled" default:"true"`
+				} `configo:"tls"`
+				Address string `configo:"address" default:"127.0.0.1"`
+				Port    *int   `configo:"port" default:"80"`
+			} `configo:"http"`
 		}
 
 		c, err := Parse[confTest](Option{})
@@ -71,14 +71,13 @@ func TestParseDefault(t *testing.T) {
 func TestParseWithEnv(t *testing.T) {
 	type confTest struct {
 		Test struct {
-			Env string `config:"env" default:"test"`
-		} `config:"test"`
+			Env string `configo:"env" default:"test"`
+		} `configo:"test"`
 	}
 
 	t.Run("with prefix", func(t *testing.T) {
 		err := os.Setenv("CONFIGO_TEST_ENV", "test_env")
 		assert.NoError(t, err)
-		defer os.Unsetenv("CONFIGO_TEST_ENV")
 
 		c, err := Parse[confTest](Option{
 			EnvPrefix:  "CONFIGO",
@@ -90,11 +89,11 @@ func TestParseWithEnv(t *testing.T) {
 	t.Run("without prefix", func(t *testing.T) {
 		err := os.Setenv("TEST_ENV", "test_env")
 		assert.NoError(t, err)
-		defer os.Unsetenv("TEST_ENV")
 
 		c, err := Parse[confTest](Option{
 			EnvInclude: true,
 		})
+
 		assert.NoError(t, err)
 		assert.Equal(t, c.Test.Env, "test_env")
 	})

@@ -12,8 +12,8 @@ For usage, you need declare your config struct with field tags `config` and if y
 ```go
 type Config struct {
 	Http struct {
-		Address string `config:"address" default:"127.0.0.1"`
-		Port    string `config:"port" default:"80"`
+		Address string `configo:"address" default:"127.0.0.1"`
+		Port    string `configo:"port" default:"80"`
     }`config:"http"`
 }
 ```
