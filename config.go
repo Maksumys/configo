@@ -1,7 +1,10 @@
 package configo
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/mitchellh/mapstructure"
+	"gopkg.in/yaml.v3"
 	"path"
 	"reflect"
 	"strconv"
@@ -218,4 +221,60 @@ func setValue(entity reflect.Value, value string) {
 	default:
 		return
 	}
+}
+
+func MarshalConf(format Format, envPrefix string, serviceName string, conf any) string {
+	raw := make(map[string]any)
+	err := mapstructure.Decode(conf, &raw)
+	if err != nil {
+		panic(err)
+	}
+
+	raw = map[string]any{serviceName: raw}
+
+	switch format {
+	case FormatEnv:
+		return marshalEnv(raw, envPrefix)
+	case FormatYaml:
+		yamlBytes, _ := yaml.Marshal(raw)
+		return string(yamlBytes)
+	default:
+		jsonBytes, _ := json.MarshalIndent(raw, "", "    ")
+		return string(jsonBytes)
+	}
+}
+
+func marshalEnv(config map[string]any, envPrefix string) string {
+	type keyValue struct {
+		key   string
+		value interface{}
+	}
+
+	settings := make([]keyValue, 0)
+	var result string
+
+	for key, value := range config {
+		settings = append(settings, keyValue{key: key, value: value})
+	}
+
+	for len(settings) > 0 {
+		var setting keyValue
+		setting, settings = settings[0], settings[1:]
+
+		switch setting.value.(type) {
+		case map[string]interface{}:
+			for key, value := range setting.value.(map[string]interface{}) {
+				settings = append(settings, keyValue{
+					key:   fmt.Sprintf("%s_%s", setting.key, key),
+					value: value,
+				})
+			}
+			continue
+		}
+
+		result += fmt.Sprintf("%s_%s=%v\n", strings.ToUpper(envPrefix), strings.ToUpper(setting.key), setting.value)
+	}
+
+	return result
+
 }
