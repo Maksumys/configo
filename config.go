@@ -77,6 +77,7 @@ func MustParse[T any](option Option) (t T) {
 // parsedConfig := config.Parse[MyConf](config.Option{})
 func Parse[T any](option Option) (t T, err error) {
 	raw := make(map[string]any)
+	v := viper.New()
 
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName:              "configo",
@@ -107,20 +108,20 @@ func Parse[T any](option Option) (t T, err error) {
 	}
 
 	if len(option.Path) != 0 {
-		viper.SetConfigFile(option.Path)
+		v.SetConfigFile(option.Path)
 	}
 
 	if option.EnvInclude && len(option.EnvPrefix) != 0 {
-		viper.SetEnvPrefix(option.EnvPrefix)
+		v.SetEnvPrefix(option.EnvPrefix)
 	}
 
 	if option.EnvInclude {
-		viper.AutomaticEnv()
-		viper.AllowEmptyEnv(true)
-		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+		v.AutomaticEnv()
+		v.AllowEmptyEnv(true)
+		v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	}
 
-	err = viper.MergeConfigMap(holder)
+	err = v.MergeConfigMap(holder)
 
 	if err != nil {
 		return
@@ -133,10 +134,10 @@ func Parse[T any](option Option) (t T, err error) {
 			ext = ext[1:]
 		}
 
-		viper.SetConfigType(ext)
+		v.SetConfigType(ext)
 	}
 
-	err = viper.MergeInConfig()
+	err = v.MergeInConfig()
 
 	if err != nil {
 		log.Printf("unable to read config, %v", err)
@@ -144,7 +145,7 @@ func Parse[T any](option Option) (t T, err error) {
 
 	if len(option.Key) != 0 {
 		confHolderOut := make(map[string]T)
-		err = viper.Unmarshal(&confHolderOut)
+		err = v.Unmarshal(&confHolderOut)
 
 		if err != nil {
 			return
@@ -154,7 +155,7 @@ func Parse[T any](option Option) (t T, err error) {
 
 		return
 	} else {
-		err = viper.Unmarshal(&t)
+		err = v.Unmarshal(&t)
 
 		if err != nil {
 			return

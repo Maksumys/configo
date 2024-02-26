@@ -86,6 +86,8 @@ func TestParseWithEnv(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, c.Test.Env, "test_env")
+
+		os.Unsetenv("CONFIGO_TEST2_TEST_ENV")
 	})
 	t.Run("without prefix", func(t *testing.T) {
 		err := os.Setenv("TEST_ENV", "test_env")
@@ -97,5 +99,7 @@ func TestParseWithEnv(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, c.Test.Env, "test_env")
+
+		os.Unsetenv("TEST_ENV")
 	})
 }
