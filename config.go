@@ -92,10 +92,13 @@ func Parse[T any](option Option) (t T, err error) {
 	// parse default variable from struct
 	err = decoder.Decode(&t)
 
+	holder := make(map[string]any)
+
 	if len(option.Key) != 0 {
-		holder := make(map[string]any)
+		holder = make(map[string]any)
 		holder[option.Key] = raw
-		raw = holder
+	} else {
+		holder = raw
 	}
 
 	if err != nil {
@@ -124,7 +127,7 @@ func Parse[T any](option Option) (t T, err error) {
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	}
 
-	err = viper.MergeConfigMap(raw)
+	err = viper.MergeConfigMap(holder)
 
 	if err != nil {
 		return

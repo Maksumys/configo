@@ -76,12 +76,13 @@ func TestParseWithEnv(t *testing.T) {
 	}
 
 	t.Run("with prefix", func(t *testing.T) {
-		err := os.Setenv("CONFIGO_TEST_ENV", "test_env")
+		err := os.Setenv("CONFIGO_TEST2_TEST_ENV", "test_env")
 		assert.NoError(t, err)
 
 		c, err := Parse[confTest](Option{
 			EnvPrefix:  "CONFIGO",
 			EnvInclude: true,
+			Key:        "test2",
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, c.Test.Env, "test_env")
