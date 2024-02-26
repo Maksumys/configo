@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
+	"log"
 	"path"
 	"reflect"
 	"strconv"
@@ -107,14 +108,6 @@ func Parse[T any](option Option) (t T, err error) {
 
 	if len(option.Path) != 0 {
 		viper.SetConfigFile(option.Path)
-
-		ext := path.Ext(option.Path)
-
-		if len(ext) > 1 {
-			ext = ext[1:]
-		}
-
-		viper.SetConfigType(ext)
 	}
 
 	if option.EnvInclude && len(option.EnvPrefix) != 0 {
@@ -131,6 +124,22 @@ func Parse[T any](option Option) (t T, err error) {
 
 	if err != nil {
 		return
+	}
+
+	if len(option.Path) != 0 {
+		ext := path.Ext(option.Path)
+
+		if len(ext) > 1 {
+			ext = ext[1:]
+		}
+
+		viper.SetConfigType(ext)
+	}
+
+	err = viper.MergeInConfig()
+
+	if err != nil {
+		log.Printf("unable to read config, %v", err)
 	}
 
 	if len(option.Key) != 0 {
