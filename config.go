@@ -145,7 +145,9 @@ func Parse[T any](option Option) (t T, err error) {
 
 	if len(option.Key) != 0 {
 		confHolderOut := make(map[string]T)
-		err = v.Unmarshal(&confHolderOut)
+		err = v.Unmarshal(&confHolderOut, func(config *mapstructure.DecoderConfig) {
+			config.TagName = "configo"
+		})
 
 		if err != nil {
 			return
