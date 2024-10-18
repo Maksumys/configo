@@ -1,0 +1,9 @@
+{
+  "any_field": "qwerty",
+  "server": {
+    "http":{
+      "host": "localhost",
+      "port": 8080
+    }
+  }
+}

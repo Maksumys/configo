@@ -103,3 +103,21 @@ func TestParseWithEnv(t *testing.T) {
 		os.Unsetenv("TEST_ENV")
 	})
 }
+
+func TestParseWithAnyFields(t *testing.T) {
+	type confTest struct {
+		Http struct {
+			Address string `configo:"host" default:"127.0.0.1"`
+			Port    int    `configo:"port" default:"80"`
+		} `configo:"http"`
+	}
+
+	c, err := Parse[confTest](Option{
+		Path: "data/config.json",
+		Key:  "server",
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, c.Http.Address, "localhost")
+	assert.Equal(t, c.Http.Port, 8080)
+}

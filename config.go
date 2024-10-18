@@ -2,6 +2,7 @@ package configo
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
@@ -144,7 +145,7 @@ func Parse[T any](option Option) (t T, err error) {
 	}
 
 	if len(option.Key) != 0 {
-		confHolderOut := make(map[string]T)
+		confHolderOut := make(map[string]any)
 		err = v.Unmarshal(&confHolderOut, func(config *mapstructure.DecoderConfig) {
 			config.TagName = "configo"
 		})
@@ -153,7 +154,11 @@ func Parse[T any](option Option) (t T, err error) {
 			return
 		}
 
-		t = confHolderOut[option.Key]
+		t, err = convertAnyToStruct[T](confHolderOut[option.Key])
+
+		if err != nil {
+			return
+		}
 
 		return
 	} else {
@@ -167,11 +172,37 @@ func Parse[T any](option Option) (t T, err error) {
 	}
 }
 
+func convertAnyToStruct[T any](a any) (t T, err error) {
+	aMap, ok := a.(map[string]any)
+
+	if !ok {
+		err = errors.New("unable to any convert to map[string]any")
+		return
+	}
+
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		TagName:              "configo",
+		IgnoreUntaggedFields: true,
+		Result:               &t,
+	})
+
+	if err != nil {
+		return
+	}
+
+	err = decoder.Decode(&aMap)
+
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func provideDefaultTag(entity any) {
 	if reflect.TypeOf(entity).Kind() != reflect.Ptr {
 		return
 	}
-
 	provideDefaultTagInternal(reflect.ValueOf(entity))
 }
 
