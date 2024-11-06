@@ -2,6 +2,7 @@ package configo
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
@@ -112,12 +113,16 @@ func TestParseWithAnyFields(t *testing.T) {
 		} `configo:"http"`
 	}
 
+	os.Setenv("QWE_SERVER_HTTP_PORT", "8081")
+
 	c, err := Parse[confTest](Option{
-		Path: "data/config.json",
-		Key:  "server",
+		Path:       "data/config.json",
+		Key:        "server",
+		EnvInclude: true,
+		EnvPrefix:  "QWE",
 	})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, c.Http.Address, "localhost")
-	assert.Equal(t, c.Http.Port, 8080)
+	assert.Equal(t, c.Http.Port, 8081)
 }

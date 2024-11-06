@@ -145,8 +145,31 @@ func Parse[T any](option Option) (t T, err error) {
 	}
 
 	if len(option.Key) != 0 {
-		confHolderOut := make(map[string]any)
-		err = v.Unmarshal(&confHolderOut, func(config *mapstructure.DecoderConfig) {
+		a := map[string]any{}
+		err = v.Unmarshal(&a, func(config *mapstructure.DecoderConfig) {
+			config.TagName = "configo"
+		})
+
+		b, ok := a[option.Key]
+		if !ok {
+			err = errors.New("config not found")
+			return
+		}
+		bMap, ok := b.(map[string]any)
+
+		if !ok {
+			err = errors.New("config not found")
+			return
+		}
+
+		v1 := viper.New()
+		err = v1.MergeConfigMap(bMap)
+
+		if err != nil {
+			return
+		}
+
+		err = v1.Unmarshal(&t, func(config *mapstructure.DecoderConfig) {
 			config.TagName = "configo"
 		})
 
@@ -154,15 +177,11 @@ func Parse[T any](option Option) (t T, err error) {
 			return
 		}
 
-		t, err = convertAnyToStruct[T](confHolderOut[option.Key])
-
-		if err != nil {
-			return
-		}
-
 		return
 	} else {
-		err = v.Unmarshal(&t)
+		err = v.Unmarshal(&t, func(config *mapstructure.DecoderConfig) {
+			config.TagName = "configo"
+		})
 
 		if err != nil {
 			return
@@ -170,33 +189,6 @@ func Parse[T any](option Option) (t T, err error) {
 
 		return
 	}
-}
-
-func convertAnyToStruct[T any](a any) (t T, err error) {
-	aMap, ok := a.(map[string]any)
-
-	if !ok {
-		err = errors.New("unable to any convert to map[string]any")
-		return
-	}
-
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		TagName:              "configo",
-		IgnoreUntaggedFields: true,
-		Result:               &t,
-	})
-
-	if err != nil {
-		return
-	}
-
-	err = decoder.Decode(&aMap)
-
-	if err != nil {
-		return
-	}
-
-	return
 }
 
 func provideDefaultTag(entity any) {
