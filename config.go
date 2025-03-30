@@ -5,14 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
-	"log"
 	"path"
 	"reflect"
 	"strconv"
 	"strings"
 )
-import "github.com/spf13/viper"
 
 type Format string
 
@@ -138,11 +137,7 @@ func Parse[T any](option Option) (t T, err error) {
 		v.SetConfigType(ext)
 	}
 
-	err = v.MergeInConfig()
-
-	if err != nil {
-		log.Printf("unable to read config, %v", err)
-	}
+	_ = v.MergeInConfig()
 
 	if len(option.Key) != 0 {
 		a := map[string]any{}
